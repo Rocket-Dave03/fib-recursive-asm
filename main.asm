@@ -47,6 +47,7 @@ slon_exit:
 
 	ret
 
+
 print_num: ; rax
 	xor rdx, rdx
 	sub rsp, 32			; Max length of u64 is 20 bytes
@@ -86,6 +87,7 @@ exit_dl:
 	add rsp, 32
 	ret	
 
+
 fib: ; rax -> rax
 	push rdx
 	cmp rax, 1
@@ -111,8 +113,6 @@ fib_rec:
 	mov rax, r8
 	pop rdx
 	ret
-
-
 
 
 _start:
