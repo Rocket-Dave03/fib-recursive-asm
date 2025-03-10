@@ -19,14 +19,44 @@ print:					; void print(char *str, int len);
 
 
 digit_char: ; rdi -> rsi
+	xor rsi, rsi
 	mov sil, byte digits[rdi]
 	ret
 
-print_num: ; rax
-	mov rax, rdi
+str_len_of_num: ; rax -> rsi
+	push rax
+	push rcx
+	push r8
+
+	cmp rax, 0
+	je slon_exit
+
+	xor rcx, rcx
+	mov r8, 10
+slon_loop:
 	xor rdx, rdx
-	sub rsp, 20			; Max length of u64
+	div r8; rax/=10; rdx = rax % 10
+	inc rcx
+
+	cmp rax, 0
+	jne slon_loop
+
+	mov rsi, rcx; return value 
+slon_exit:
+	pop r8
+	pop rcx
+	pop rax
+
+	ret
+
+print_num: ; rax
+	xor rdx, rdx
+	sub rsp, 32			; Max length of u64 is 20 bytes
 	mov r10, rsp
+
+	call str_len_of_num
+	mov r8, rsi
+	xor rsi,rsi
 
 	mov r11, 10
 
@@ -34,11 +64,15 @@ print_num: ; rax
 	cmp rax, 0
 	je exit_dl
 digit_loop:
+	xor rdx, rdx
 	div r11; 10
 
 	mov rdi, rdx
 	call digit_char
-	mov r10[rcx], rsi
+	mov r9, r8
+	sub r9, 1
+	sub r9, rcx
+	mov byte r10[r9], sil
 	inc rcx
 
 	cmp rax, 0
@@ -49,7 +83,7 @@ exit_dl:
 	mov rsi, rcx
 	call print
 
-	add rsp, 20
+	add rsp, 32
 	ret	
 
 
@@ -61,7 +95,7 @@ _start:
 	call print
 
 
-	mov rax, 2
+	mov rax, 18446744073709551615
 	call print_num
 
 	mov rax, 60            ; The system call for exit (sys_exit)
