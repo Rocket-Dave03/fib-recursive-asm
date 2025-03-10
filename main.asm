@@ -1,6 +1,4 @@
 section .data
-	hello:     db 'Hello world!',10    ; 'Hello world!' plus a linefeed character
-	helloLen:  equ $-hello             ; Length of the 'Hello world!' string
 	digits: db '0123456789'
 
 section .text
@@ -79,24 +77,57 @@ digit_loop:
 	jne digit_loop
 	
 exit_dl:
+	mov byte r10[r8], 10; add newline
 	mov rdi, r10
 	mov rsi, rcx
+	inc rsi; len += 1; for newline
 	call print
 
 	add rsp, 32
 	ret	
 
+fib: ; rax -> rax
+	push rdx
+	cmp rax, 1
+	ja fib_rec
+	mov rax, 1
+	pop rdx
+	ret
+fib_rec:
+	mov rdx, rax; save rax
+
+	sub rax, 1 ; fib(n-1)
+	call fib
+	mov r8, rax
+
+	push r8
+	mov rax , rdx; restore rax
+	sub rax, 2; fib(n-2)
+	call fib
+	mov r9, rax
+	pop r8
+
+	add r8, r9
+	mov rax, r8
+	pop rdx
+	ret
+
+
 
 
 _start:
-	mov rdi,hello        
-	mov rsi,helloLen     
-	                     
-	call print
+	xor rcx, rcx
+floop:
+	push rcx
 
-
-	mov rax, 18446744073709551615
+	mov rax, rcx
+	call fib
 	call print_num
+
+	pop rcx
+	inc rcx
+	cmp rcx, 10
+	jb floop
 
 	mov rax, 60            ; The system call for exit (sys_exit)
 	mov rdi, 0            ; Exit with return code of 0 (no error)
